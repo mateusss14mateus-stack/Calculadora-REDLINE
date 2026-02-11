@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>REDLINE • Calculadora RP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: radial-gradient(circle at top, #300000, #080000 70%);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .hidden { display: none; }
+
+    .card {
+      background: #0f0f0f;
+      border-radius: 16px;
+      box-shadow: 0 0 40px rgba(255,0,0,0.25);
+      padding: 24px;
+      max-width: 420px;
+      margin: 40px auto;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #ff2a2a;
+      letter-spacing: 1px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+    }
+
+    input {
+      background: #1c1c1c;
+      color: #fff;
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff2a2a, #b80000);
+      color: #fff;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      filter: brightness(1.15);
+    }
+
+    .btn-secondary {
+      background: #333;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0;
+    }
+
+    .item input { width: auto; }
+
+    .total {
+      margin-top: 16px;
+      padding: 16px;
+      background: #ff2a2a;
+      color: #000;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .discount {
+      background: linear-gradient(135deg, #00ff88, #00aa55);
+      color: #000;
+      margin-top: 10px;
+    }
+
+    small {
+      display: block;
+      text-align: center;
+      opacity: 0.6;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="login">
+  <h1>REDLINE</h1>
+  <input id="user" placeholder="Usuário" />
+  <input id="pass" type="password" placeholder="Senha" />
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div class="card hidden" id="app">
+  <h2>Calculadora</h2>
+  <div id="items"></div>
+
+  <button class="discount" onclick="applyDiscount()">Aplicar 20% de desconto</button>
+
+  <div class="total" id="total">Total: R$ 0</div>
+  <button class="btn-secondary" onclick="logout()">Sair</button>
+</div>
+
+<script>
+  const users = JSON.parse(localStorage.getItem('users')) || { admin: '1234' };
+  const itemsData = JSON.parse(localStorage.getItem('items')) || [
+    { name: 'Turbo', price: 50000 },
+    { name: 'Transmissão N3', price: 100000 },
+    { name: 'Freio N3', price: 60000 },
+    { name: 'Blindagem Full', price: 1500000 },
+    { name: 'Neon', price: 40000 },
+    { name: 'Xenon', price: 30000 }
+  ];
+
+  let discountApplied = false;
+
+  function login() {
+    const u = user.value;
+    const p = pass.value;
+    if (users[u] === p) {
+      login.classList.add('hidden');
+      app.classList.remove('hidden');
+      renderItems();
+    } else {
+      alert('Usuário ou senha inválidos');
+    }
+  }
+
+  function logout() {
+    app.classList.add('hidden');
+    login.classList.remove('hidden');
+  }
+
+  function renderItems() {
+    items.innerHTML = '';
+    itemsData.forEach((i, idx) => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <label>
+          <input type="checkbox" onchange="calc()" data-price="${i.price}">
+          ${i.name}
+        </label>
+        <span>R$ ${i.price.toLocaleString('pt-BR')}</span>
+      `;
+      items.appendChild(div);
+    });
+    calc();
+  }
+
+  function calc() {
+    let total = 0;
+    document.querySelectorAll('#items input:checked').forEach(c => {
+      total += Number(c.dataset.price);
+    });
+
+    if (discountApplied) total *= 0.8;
+
+    document.getElementById('total').innerText =
+      'Total: R$ ' + total.toLocaleString('pt-BR');
+  }
+
+  function applyDiscount() {
+    discountApplied = !discountApplied;
+    calc();
+  }
+</script>
+
+</body>
+</html>
